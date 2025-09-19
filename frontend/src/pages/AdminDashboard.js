@@ -38,6 +38,11 @@ const AdminDashboard = () => {
     fetchEvents();
   }, [fetchEvents]);
 
+  // Quick stats derived from events
+  const totalEvents = events.length;
+  const upcomingCount = events.filter((e) => new Date(e.date) >= new Date()).length;
+  const categoryCount = new Set(events.map((e) => (e.type || "").trim()).filter(Boolean)).size;
+
   // Form handlers
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -134,6 +139,18 @@ const AdminDashboard = () => {
         {editingId ? "Edit Event" : "Add Event"}
       </button>
 
+      {/* Overview moved from Event List */}
+      {!loading && (
+        <section className="admin-overview">
+          <h2 className="overview-title">Overview</h2>
+          <div className="overview-grid">
+            <div className="overview-card"><div className="ov-value">{totalEvents}</div><div className="ov-label">Total events</div></div>
+            <div className="overview-card"><div className="ov-value">{upcomingCount}</div><div className="ov-label">Upcoming</div></div>
+            <div className="overview-card"><div className="ov-value">{categoryCount}</div><div className="ov-label">Categories</div></div>
+          </div>
+        </section>
+      )}
+
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -187,7 +204,6 @@ const AdminDashboard = () => {
                 <p>{event.description}</p>
                 <p>Type: {event.type}</p>
                 <p>Date: {new Date(event.date).toLocaleDateString()}</p>
-                <p>Price: ${event.price}</p>
                 <p>Location: {event.location}</p>
                 <div className="card-actions">
                   <button onClick={() => handleEdit(event)}>Edit</button>

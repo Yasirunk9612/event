@@ -1,12 +1,19 @@
 /* Global Theme & Resets */
 :root {
-  --bg: #0b0f1f;
-  --bg-2: #131735;
-  --text: #e8e8ef;
-  --muted: #a7abc4;
-  --primary: #6c5ce7;
-  --accent: #00e5ff;
-  --border: rgba(255, 255, 255, 0.15);
+  /* Light palette based on request */
+  --bg: #F4F5F7;          /* Light Grayish Background */
+  --bg-2: #FEFEFE;        /* Very Light Gray */
+  --surface: #FFFFFF;     /* White */
+  --near-white: #FDFDFD;  /* Near White */
+
+  --text: #283E56;        /* Slightly Darker Blue (for headings/text) */
+  --muted: #6F7D8A;       /* Muted gray-blue for secondary text */
+
+  --primary: #253F56;     /* Dark Blue for buttons/links */
+  --primary-600: #283E56; /* Slightly darker blue */
+  --accent: #253F56;      /* Use same family for accents */
+
+  --border: rgba(37, 63, 86, 0.12); /* Subtle blue-gray border */
 }
 
 * { box-sizing: border-box; }
@@ -20,17 +27,25 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(108, 92, 231, 0.18), transparent 60%),
-    radial-gradient(1000px 500px at 90% 0%, rgba(0, 229, 255, 0.18), transparent 60%),
-    linear-gradient(180deg, var(--bg), var(--bg-2));
+  background-color: var(--bg); /* Static, single-color background */
 }
 
 img { max-width: 100%; display: block; }
 
 /* Typography */
-h1, h2, h3, h4 { color: var(--text); margin-top: 0; }
-p { color: var(--muted); }
+h1, h2, h3, h4 {
+  color: var(--text);
+  margin-top: 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 /* Focus styles */
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

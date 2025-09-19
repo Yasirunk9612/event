@@ -1,28 +1,66 @@
+/* Booking — Light, clean */
+:root {
+  --text: #283E56;
+  --muted: #6F7D8A;
+  --border: rgba(37, 63, 86, 0.12);
+  --card: #FFFFFF;
+  --near-white: #FDFDFD;
+  --shadow: 0 10px 30px rgba(37, 63, 86, 0.12);
+  --primary: #253F56;
+}
+
 .booking-container {
-  max-width: 600px;
-  margin: 2rem auto;
+  max-width: 720px;
+  margin: 2rem auto 4rem;
   padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+  color: var(--text);
+}
+
+.back-btn {
+  margin: 0 0 0.75rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: #FEFEFE;
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+}
+.back-btn:hover { background: #FBFBFB; }
+
+.booking-container h1 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+.booking-container h2 { margin: 0 0 0.5rem; color: var(--muted); font-weight: 600; }
+.booking-container p { color: var(--muted); }
+
+.booking-form {
+  margin-top: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
 }
 
 .booking-form input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem 0.9rem;
   margin-bottom: 0.75rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--near-white);
+  color: var(--text);
 }
+.booking-form input:focus { outline: 2px solid rgba(37,63,86,0.4); outline-offset: 2px; }
 
 .booking-form button {
-  padding: 0.5rem 1rem;
-  background: #007bff;
+  padding: 0.7rem 1.1rem;
+  background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(37,63,86,0.18);
 }
-
-.booking-form button:hover {
-  background: #0056b3;
-}
+.booking-form button:hover { filter: brightness(1.05); }

@@ -1,13 +1,12 @@
-/* Event Detail — Modern, Responsive */
+/* Event Detail — Light, clean, modern */
 :root {
-  --text: #e8e8ef;
-  --muted: #a7abc4;
-  --border: rgba(255, 255, 255, 0.15);
-  --card: rgba(255, 255, 255, 0.06);
+  --text: #283E56;
+  --muted: #6F7D8A;
+  --border: rgba(37, 63, 86, 0.12);
+  --card: #FFFFFF;
   --radius: 14px;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --accent: #00e5ff;
-  --primary: #6c5ce7;
+  --shadow: 0 10px 30px rgba(37, 63, 86, 0.12);
+  --primary: #253F56;
 }
 
 .event-detail-container {
@@ -21,20 +20,17 @@
   margin: 0 0 0.75rem;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
+  background: #FEFEFE;
   border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
 }
-.back-btn:hover { background: rgba(255,255,255,0.14); }
+.back-btn:hover { background: #FBFBFB; }
 
 .event-detail-container h1 {
   margin: 0 0 0.75rem;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  background: linear-gradient(90deg, var(--accent), var(--primary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  color: var(--text);
 }
 
 .event-detail-container img {
@@ -51,7 +47,7 @@
 
 .packages-section {
   margin-top: 2rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  background: var(--card);
   padding: 1rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -64,32 +60,17 @@
   border: 1px solid var(--border);
   padding: 0.75rem 0.9rem;
   border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-}
-
-
-.event-detail-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-
-.packages-section ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-.packages-section li {
-  margin-bottom: 1rem;
+  background: #FDFDFD;
 }
 
 .book-btn {
   margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
-  background: linear-gradient(135deg, #2ed573, #20e3b2);
-  color: #0b0f1f;
+  padding: 0.6rem 1.2rem;
+  background: var(--primary);
+  color: #FFFFFF;
   border: none;
   border-radius: 12px;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(37,63,86,0.18);
 }
 .book-btn:hover { filter: brightness(1.05); }

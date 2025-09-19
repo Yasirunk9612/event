@@ -8,12 +8,15 @@ const EventList = () => {
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(12);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch events and bookings in parallel
     const fetchAll = async () => {
       try {
+        setLoading(true);
         const [eventsRes, bookingsRes] = await Promise.all([
           axios.get("http://localhost:5002/api/events"),
           axios.get("http://localhost:5002/api/bookings"),
@@ -22,6 +25,8 @@ const EventList = () => {
         setBookings(bookingsRes.data || []);
       } catch (e) {
         console.error("Failed to fetch events/bookings", e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAll();
@@ -86,6 +91,13 @@ const EventList = () => {
     }
   };
 
+
+  // Helpers for smooth scroll
+  const scrollToId = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const renderCard = (event) => (
     <div
       key={event._id}
@@ -108,7 +120,16 @@ const EventList = () => {
   );
 
   return (
-    <div className="event-list-container">
+    <>
+      {/* Page Header */}
+      <header className="page-header">
+        <div className="brand">Event Explorer</div>
+        <nav className="nav-links" aria-label="Section navigation">
+          <button onClick={() => scrollToId("trending")} className="nav-link">Trending</button>
+          <button onClick={() => scrollToId("results")} className="nav-link">Results</button>
+          <button onClick={() => scrollToId("all-events")} className="nav-link">All Events</button>
+        </nav>
+      </header>
       {/* Hero & Search */}
       <section className="hero">
         <h1 className="title">Discover Amazing Events</h1>
@@ -137,7 +158,19 @@ const EventList = () => {
       </section>
 
       {/* Trending */}
-      {trending.length > 0 && (
+      {loading ? (
+        <section className="section" id="trending">
+          <div className="section-header">
+            <h2 className="section-title">Trending now</h2>
+            <span className="section-sub">Loading…</span>
+          </div>
+          <div className="event-grid trending-grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div className="event-card skeleton-card" key={`sk-tr-${i}`} />
+            ))}
+          </div>
+        </section>
+      ) : trending.length > 0 && (
         <section className="section" id="trending">
           <div className="section-header">
             <h2 className="section-title">Trending now</h2>
@@ -154,13 +187,29 @@ const EventList = () => {
         <section className="section" id="results">
           <div className="section-header">
             <h2 className="section-title">Results</h2>
-            <span className="section-sub">{filtered.length} matches</span>
+            <span className="section-sub">{loading ? "Loading…" : `${filtered.length} matches`}</span>
           </div>
-          <div className="event-grid">
-            {filtered.map((ev) => renderCard(ev))}
-          </div>
+          {loading ? (
+            <div className="event-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div className="event-card skeleton-card" key={`sk-r-${i}`} />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="empty-state" role="status" aria-live="polite">
+              <div className="empty-illustration">🔎</div>
+              <h3>No events found</h3>
+              <p>Try adjusting your search or pick a different category.</p>
+            </div>
+          ) : (
+            <div className="event-grid">
+              {filtered.map((ev) => renderCard(ev))}
+            </div>
+          )}
         </section>
       )}
+
+      {/* Overview removed as requested */}
 
       {/* Category sections — 6 items each */}
       {categories.map((cat) => {
@@ -181,10 +230,43 @@ const EventList = () => {
         );
       })}
 
-    <div className="event-list-container">
-        
-    </div>
-    </div>
+      {/* All events */}
+      <section className="section" id="all-events">
+        <div className="section-header">
+          <h2 className="section-title">All Events</h2>
+          <span className="section-sub">Explore everything</span>
+        </div>
+        {loading ? (
+          <div className="event-grid">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div className="event-card skeleton-card" key={`sk-a-${i}`} />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="event-grid">
+              {events
+                .slice()
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .slice(0, visibleCount)
+                .map((ev) => renderCard(ev))}
+            </div>
+            {visibleCount < events.length && (
+              <div className="load-more-row">
+                <button className="load-more-btn" onClick={() => setVisibleCount((v) => v + 12)}>
+                  Load more
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Footer note */}
+      <footer className="page-footer">
+        <span>Discover, book, and enjoy great events.</span>
+      </footer>
+    </>
   );
 };
 
