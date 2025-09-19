@@ -52,8 +52,11 @@ const EventDetail = () => {
                   id={`pkg-${idx}`}
                 />
                 <label htmlFor={`pkg-${idx}`}>
-                  <strong>{pkg.name}</strong> - Rs.{pkg.price} <br />
-                  {pkg.description}
+                  <span className="pkg-header">
+                    <strong>{pkg.name}</strong>
+                    <span className="pkg-price-badge">Rs.{pkg.price}</span>
+                  </span>
+                  <span className="pkg-desc">{pkg.description}</span>
                 </label>
               </li>
             ))}
@@ -63,7 +66,7 @@ const EventDetail = () => {
         )}
       </div>
 
-      <button className="book-btn" onClick={handleBooking}>
+      <button className="book-btn" onClick={handleBooking} disabled={!selectedPackage} aria-disabled={!selectedPackage}>
         Book Selected Package
       </button>
     </div>
