@@ -7,7 +7,8 @@ const EventList = () => {
   const [events, setEvents] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all"); // retained only for search results logic
+  const [activeTab, setActiveTab] = useState("Normal"); // Active luxury tab
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(12);
   const navigate = useNavigate();
@@ -40,16 +41,25 @@ const EventList = () => {
   const slugify = (s = "") => s.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   const now = useMemo(() => new Date(), []);
 
-  // Category list from events
-  const categories = useMemo(() => {
-    const set = new Set(
-      (events || [])
-        .map((e) => (e.type || "").toString().trim())
-        .filter(Boolean)
-        .map((t) => t[0].toUpperCase() + t.slice(1))
-    );
-    return Array.from(set).sort();
+  // Luxury categories
+  const luxuryCategories = ['Normal', 'Luxury', 'Full Luxury'];
+  
+  // Group events by luxury category
+  const eventsByLuxuryCategory = useMemo(() => {
+    const grouped = {};
+    luxuryCategories.forEach(category => {
+      grouped[category] = (events || [])
+        .filter(event => (event.luxuryCategory || 'Normal') === category)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+    });
+    return grouped;
   }, [events]);
+
+  // Current tab events
+  const currentTabEvents = eventsByLuxuryCategory[activeTab] || [];
+
+  // Remove dynamic type categories (simplified per requirement)
+  const categories = []; // no longer used for separate sections
 
   // Booking counts per eventId
   const bookingCount = useMemo(() => {
@@ -113,9 +123,25 @@ const EventList = () => {
       <h2>{event.title}</h2>
       <p className="event-date">📅 {new Date(event.date).toDateString()}</p>
       <p className="event-location">📍 {event.location}</p>
-      <p>{event.description}</p>
+      <div className="price-row">
+        {event.originalPrice && event.originalPrice > event.price && (
+          <span className="original-price">Rs.{event.originalPrice}</span>
+        )}
+        <span className="current-price">Rs.{event.price}</span>
+        {event.originalPrice && event.originalPrice > event.price && (
+          <span className="discount-badge">-
+            {Math.round(((event.originalPrice - event.price) / event.originalPrice) * 100)}%
+          </span>
+        )}
+      </div>
+      <p className="event-description">{event.shortDescription || event.description}</p>
       
-      <span className="event-type">{event.type}</span>
+      <div className="event-badges">
+        <span className="event-type">{event.type}</span>
+        <span className={`luxury-badge luxury-${event.luxuryCategory?.toLowerCase().replace(' ', '-') || 'normal'}`}>
+          {event.luxuryCategory || 'Normal'}
+        </span>
+      </div>
     </div>
   );
 
@@ -126,6 +152,7 @@ const EventList = () => {
         <div className="brand">Event Explorer</div>
         <nav className="nav-links" aria-label="Section navigation">
           <button onClick={() => scrollToId("trending")} className="nav-link">Trending</button>
+          <button onClick={() => scrollToId("luxury-categories")} className="nav-link">Categories</button>
           <button onClick={() => scrollToId("results")} className="nav-link">Results</button>
           <button onClick={() => scrollToId("all-events")} className="nav-link">All Events</button>
         </nav>
@@ -143,18 +170,7 @@ const EventList = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        {!!categories.length && (
-          <div className="chip-row">
-            <button className={`chip ${selectedCategory === "all" ? "active" : ""}`} onClick={() => onChipClick("all")}>
-              All
-            </button>
-            {categories.map((c) => (
-              <button className={`chip ${selectedCategory.toLowerCase() === c.toLowerCase() ? "active" : ""}`} key={c} onClick={() => onChipClick(c)}>
-                {c}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Category chips removed */}
       </section>
 
       {/* Trending */}
@@ -182,8 +198,99 @@ const EventList = () => {
         </section>
       )}
 
+      {/* Luxury Categories with Tabs */}
+      <section className="section luxury-categories-section" id="luxury-categories">
+        <div className="section-header">
+          <h2 className="section-title">Browse by Luxury Level</h2>
+          <span className="section-sub">Find your perfect experience</span>
+        </div>
+        
+        {/* Modern Tab Navigation */}
+        <div className="luxury-tabs">
+          {luxuryCategories.map(category => {
+            const categoryEvents = eventsByLuxuryCategory[category] || [];
+            const isActive = activeTab === category;
+            
+            const categoryIcon = {
+              'Normal': '🎯',
+              'Luxury': '⭐',
+              'Full Luxury': '💎'
+            }[category] || '🎯';
+            
+            const categoryGradient = {
+              'Normal': 'linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)',
+              'Luxury': 'linear-gradient(135deg, #A855F7 0%, #7C3AED 100%)',
+              'Full Luxury': 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)'
+            }[category];
+
+            return (
+              <button
+                key={category}
+                className={`luxury-tab ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveTab(category)}
+                style={{ '--tab-gradient': categoryGradient }}
+              >
+                <div className="tab-content">
+                  <span className="tab-icon">{categoryIcon}</span>
+                  <div className="tab-text">
+                    <span className="tab-title">{category}</span>
+                    <span className="tab-count">{categoryEvents.length} events</span>
+                  </div>
+                </div>
+                <div className="tab-glow"></div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab Content */}
+        <div className="luxury-tab-content">
+          {loading ? (
+            <div className="event-grid luxury-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div className="event-card skeleton-card" key={`sk-lux-${i}`} />
+              ))}
+            </div>
+          ) : currentTabEvents.length === 0 ? (
+            <div className="empty-tab-state">
+              <div className="empty-illustration">
+                {activeTab === 'Normal' ? '🎯' : activeTab === 'Luxury' ? '⭐' : '💎'}
+              </div>
+              <h3>No {activeTab} events yet</h3>
+              <p>Check back soon for new {activeTab.toLowerCase()} events!</p>
+            </div>
+          ) : (
+            <>
+              <div className="luxury-category-info">
+                <p className="luxury-category-desc">
+                  {activeTab === 'Normal' && 'Quality events at affordable prices with great value'}
+                  {activeTab === 'Luxury' && 'Premium experiences with enhanced features and comfort'}
+                  {activeTab === 'Full Luxury' && 'Ultimate luxury with exclusive amenities and VIP treatment'}
+                </p>
+              </div>
+              <div className="event-grid luxury-grid">
+                {currentTabEvents.slice(0, 12).map(event => renderCard(event))}
+              </div>
+              {currentTabEvents.length > 12 && (
+                <div className="see-more-row">
+                  <button 
+                    className="see-more-btn luxury-see-more"
+                    onClick={() => {
+                      setSelectedCategory('all');
+                      setSearch(activeTab);
+                    }}
+                  >
+                    View All {activeTab} Events ({currentTabEvents.length})
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
       {/* Filtered results if user is searching or selected a category */}
-      {(search.trim() || selectedCategory !== "all") && (
+      {search.trim() && (
         <section className="section" id="results">
           <div className="section-header">
             <h2 className="section-title">Results</h2>
@@ -212,23 +319,7 @@ const EventList = () => {
       {/* Overview removed as requested */}
 
       {/* Category sections — 6 items each */}
-      {categories.map((cat) => {
-        const catEvents = (events || []).filter((e) => (e.type || "").toLowerCase() === cat.toLowerCase());
-        if (catEvents.length === 0) return null;
-        const topSix = catEvents
-          .slice()
-          .sort((a, b) => new Date(a.date) - new Date(b.date))
-          .slice(0, 6);
-        return (
-          <section className="section" id={`cat-${slugify(cat)}`} key={cat}>
-            <div className="section-header">
-              <h2 className="section-title">{cat}</h2>
-              <button className="see-all-link" onClick={() => setSelectedCategory(cat)}>See all</button>
-            </div>
-            <div className="event-grid category-grid">{topSix.map((ev) => renderCard(ev))}</div>
-          </section>
-        );
-      })}
+      {/* Type category sections removed */}
 
       {/* All events */}
       <section className="section" id="all-events">
