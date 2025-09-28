@@ -1,0 +1,29 @@
+ .event-create-container { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; }
+ .event-create-container h1 { margin: 0 0 1.2rem; }
+ .alert { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .9rem; }
+ .alert.success { background:#ECFDF5; color:#065F46; border:1px solid #10B981; }
+ .alert.error { background:#FEF2F2; color:#991B1B; border:1px solid #F87171; }
+ .event-form { display: flex; flex-direction: column; gap: 2rem; }
+ .form-grid { display: grid; gap: 1rem 1.25rem; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+ .form-field { display: flex; flex-direction: column; gap: .35rem; }
+ .form-field.full { grid-column: 1 / -1; }
+ .form-field label { font-weight:600; font-size:.85rem; letter-spacing:.5px; text-transform: uppercase; }
+ .form-field input, .form-field textarea, .form-field select { border:1px solid #d0d7df; padding:.55rem .7rem; border-radius:8px; font:inherit; }
+ .form-field textarea { resize: vertical; }
+ .subsection h2 { margin:.25rem 0 0.75rem; font-size:1.2rem; }
+ .inline-row { display:grid; grid-template-columns: repeat(3,1fr) auto; gap:.6rem; margin-bottom:.5rem; }
+ .inline-row input { border:1px solid #d0d7df; padding:.45rem .55rem; border-radius:6px; font-size:.85rem; }
+ .add-btn, .remove-btn { background:#253F56; color:#fff; border:none; padding:.45rem .85rem; border-radius:6px; cursor:pointer; font-size:.75rem; }
+ .add-btn { margin-top:.4rem; background:#1e3a54; }
+ .add-btn:hover { filter:brightness(1.1); }
+ .remove-btn { background:#b91c1c; }
+ .remove-btn:hover { filter:brightness(1.1); }
+ .actions { display:flex; justify-content:flex-end; }
+ .submit-btn { background:#253F56; color:#fff; border:none; padding:.75rem 1.4rem; border-radius:8px; cursor:pointer; font-weight:600; }
+ .submit-btn:disabled { opacity:.6; cursor:not-allowed; }
+ .discount-preview { margin-top:.25rem; font-size:.75rem; color:#065F46; background:#ECFDF5; padding:2px 6px; display:inline-block; border-radius:4px; }
+ /* Pricing visual classes reused */
+ .price-row { display:flex; align-items:center; gap:.5rem; }
+ .original-price { text-decoration: line-through; color:#9CA3AF; font-size:.8rem; }
+ .current-price { font-weight:700; color:#253F56; }
+ .discount-badge { background:#10B981; color:#fff; font-size:.65rem; padding:2px 6px; border-radius:999px; font-weight:700; letter-spacing:.5px; }
