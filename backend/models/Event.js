@@ -70,7 +70,7 @@ const eventSchema = new mongoose.Schema(
       required: true,
       default: "Normal"
     },
-    date: { type: Date, required: true },
+    date: { type: Date    },
     price: { type: Number, required: true }, // Current / active price
     originalPrice: { type: Number }, // Shown as struck through if > price
     location: { type: String, required: true },
