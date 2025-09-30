@@ -14,7 +14,7 @@ const AdminDashboard = () => {
     description: "",
     type: "",
     luxuryCategory: "Normal",
-    date: "",
+  // date removed per new requirements
     price: "",
     originalPrice: "",
     location: "",
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
 
   // Quick stats derived from events
   const totalEvents = events.length;
-  const upcomingCount = events.filter((e) => new Date(e.date) >= new Date()).length;
+  // upcomingCount removed due to date removal
   const luxuryBreakdown = LUXURY_OPTIONS.reduce((acc, cat) => { acc[cat] = events.filter(e => e.luxuryCategory === cat).length; return acc; }, {});
 
   // Form handlers
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
       description: "",
       type: "",
       luxuryCategory: "Normal",
-      date: "",
+  // date removed
       price: "",
       originalPrice: "",
       location: "",
@@ -145,7 +145,7 @@ const AdminDashboard = () => {
       description: event.description,
       type: event.type,
       luxuryCategory: event.luxuryCategory || "Normal",
-      date: event.date.split("T")[0],
+  // date removed
       price: event.price,
       originalPrice: event.originalPrice || event.price,
       location: event.location,
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
                 {LUXURY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
 
-              <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+              {/* date input removed */}
               <input type="number" name="price" placeholder="Active Price" value={formData.price} onChange={handleChange} required />
               <input type="number" name="originalPrice" placeholder="Original Price (optional)" value={formData.originalPrice} onChange={handleChange} />
               <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} required />
@@ -265,7 +265,7 @@ const AdminDashboard = () => {
                 {event.originalPrice && event.originalPrice > event.price && (
                   <p className="card-discount-line"><span className="old">${event.originalPrice}</span> <span className="save">Save {Math.round(((event.originalPrice - event.price)/event.originalPrice)*100)}%</span></p>
                 )}
-                <p>Date: {new Date(event.date).toLocaleDateString()}</p>
+                {/* Date removed */}
                 <p>Location: {event.location}</p>
                 <div className="card-actions">
                   <button onClick={() => handleEdit(event)}>Edit</button>

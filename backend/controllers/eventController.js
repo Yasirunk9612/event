@@ -3,7 +3,7 @@ import Event from "../models/Event.js";
 // Create new event (with packages and add-ons)
 export const createEvent = async (req, res) => {
   try {
-    const { title, description, type, luxuryCategory, date, price, originalPrice, location, packages, addOns, shortDescription } = req.body;
+  const { title, description, type, luxuryCategory, price, originalPrice, location, packages, addOns, shortDescription } = req.body; // date removed
     const image = req.file ? `/uploads/${req.file.filename}` : null;
 
     const allowedLuxury = ["Normal", "Luxury", "Full Luxury"];
@@ -14,7 +14,6 @@ export const createEvent = async (req, res) => {
       description,
       type,
       luxuryCategory: resolvedLuxury,
-      date,
       price,
       originalPrice: originalPrice || price,
       location,
@@ -23,6 +22,14 @@ export const createEvent = async (req, res) => {
       addOns: addOns ? JSON.parse(addOns) : [],
       shortDescription,
     });
+
+    // Filter packages to allowed names and max 3 (Normal, Luxury, Full Luxury) if provided
+    const allowedPackages = ["Normal", "Luxury", "Full Luxury"];
+    if (event.packages && event.packages.length) {
+      event.packages = event.packages
+        .filter(p => allowedPackages.includes(p.name))
+        .slice(0, 3);
+    }
 
     await event.save();
     res.status(201).json(event);
@@ -58,21 +65,24 @@ export const updateEvent = async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const { title, description, type, luxuryCategory, date, price, originalPrice, location, packages, addOns, shortDescription } = req.body;
+  const { title, description, type, luxuryCategory, price, originalPrice, location, packages, addOns, shortDescription } = req.body; // date removed
     const allowedLuxury = ["Normal", "Luxury", "Full Luxury"];
 
     if (title) event.title = title;
     if (description) event.description = description;
     if (type) event.type = type;
     if (luxuryCategory && allowedLuxury.includes(luxuryCategory)) event.luxuryCategory = luxuryCategory;
-    if (date) event.date = date;
     if (price) event.price = price;
     if (originalPrice) event.originalPrice = originalPrice;
     if (location) event.location = location;
     if (shortDescription) event.shortDescription = shortDescription;
     if (req.file) event.image = `/uploads/${req.file.filename}`;
 
-    if (packages) event.packages = JSON.parse(packages);
+    if (packages) {
+      const parsed = JSON.parse(packages);
+      const allowedPackages = ["Normal", "Luxury", "Full Luxury"];
+      event.packages = parsed.filter(p => allowedPackages.includes(p.name)).slice(0,3);
+    }
     if (addOns) event.addOns = JSON.parse(addOns);
 
     await event.save();

@@ -70,7 +70,7 @@ const eventSchema = new mongoose.Schema(
       required: true,
       default: "Normal"
     },
-    date: { type: Date    },
+  // date removed per new requirements (events no longer scheduled by date)
     price: { type: Number, required: true }, // Current / active price
     originalPrice: { type: Number }, // Shown as struck through if > price
     location: { type: String, required: true },
