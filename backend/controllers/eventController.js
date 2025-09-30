@@ -3,17 +3,13 @@ import Event from "../models/Event.js";
 // Create new event (with packages and add-ons)
 export const createEvent = async (req, res) => {
   try {
-  const { title, description, type, luxuryCategory, price, originalPrice, location, packages, addOns, shortDescription } = req.body; // date removed
+    const { title, description, type, price, originalPrice, location, packages, addOns, shortDescription } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : null;
-
-    const allowedLuxury = ["Normal", "Luxury", "Full Luxury"];
-    const resolvedLuxury = luxuryCategory && allowedLuxury.includes(luxuryCategory) ? luxuryCategory : "Normal";
 
     const event = new Event({
       title,
       description,
       type,
-      luxuryCategory: resolvedLuxury,
       price,
       originalPrice: originalPrice || price,
       location,
@@ -22,14 +18,6 @@ export const createEvent = async (req, res) => {
       addOns: addOns ? JSON.parse(addOns) : [],
       shortDescription,
     });
-
-    // Filter packages to allowed names and max 3 (Normal, Luxury, Full Luxury) if provided
-    const allowedPackages = ["Normal", "Luxury", "Full Luxury"];
-    if (event.packages && event.packages.length) {
-      event.packages = event.packages
-        .filter(p => allowedPackages.includes(p.name))
-        .slice(0, 3);
-    }
 
     await event.save();
     res.status(201).json(event);
@@ -65,13 +53,11 @@ export const updateEvent = async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-  const { title, description, type, luxuryCategory, price, originalPrice, location, packages, addOns, shortDescription } = req.body; // date removed
-    const allowedLuxury = ["Normal", "Luxury", "Full Luxury"];
+    const { title, description, type, price, originalPrice, location, packages, addOns, shortDescription } = req.body;
 
     if (title) event.title = title;
     if (description) event.description = description;
     if (type) event.type = type;
-    if (luxuryCategory && allowedLuxury.includes(luxuryCategory)) event.luxuryCategory = luxuryCategory;
     if (price) event.price = price;
     if (originalPrice) event.originalPrice = originalPrice;
     if (location) event.location = location;
@@ -79,9 +65,7 @@ export const updateEvent = async (req, res) => {
     if (req.file) event.image = `/uploads/${req.file.filename}`;
 
     if (packages) {
-      const parsed = JSON.parse(packages);
-      const allowedPackages = ["Normal", "Luxury", "Full Luxury"];
-      event.packages = parsed.filter(p => allowedPackages.includes(p.name)).slice(0,3);
+      event.packages = JSON.parse(packages);
     }
     if (addOns) event.addOns = JSON.parse(addOns);
 
@@ -139,19 +123,4 @@ export const addAddOnToEvent = async (req, res) => {
   }
 };
 
-// Get events by luxury category
-export const getEventsByLuxuryCategory = async (req, res) => {
-  try {
-    const { luxuryCategory } = req.params;
-    const validCategories = ['Normal', 'Luxury', 'Full Luxury'];
-    
-    if (!validCategories.includes(luxuryCategory)) {
-      return res.status(400).json({ message: "Invalid luxury category" });
-    }
 
-    const events = await Event.find({ luxuryCategory });
-    res.json(events);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
