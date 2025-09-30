@@ -7,7 +7,6 @@ import {
   deleteEvent,
   addPackageToEvent,
   addAddOnToEvent,
-  getEventsByLuxuryCategory,
 } from "../controllers/eventController.js";
 
 const eventRoutes = (upload) => {
@@ -15,7 +14,6 @@ const eventRoutes = (upload) => {
 
   router.post("/", upload.single("image"), createEvent);
   router.get("/", getEvents);
-  router.get("/luxury/:luxuryCategory", getEventsByLuxuryCategory);
   router.get("/:id", getEventById);
   router.put("/:id", upload.single("image"), updateEvent);
   router.delete("/:id", deleteEvent);

@@ -62,7 +62,7 @@
     border-radius: 20px;
     background: 
         linear-gradient(135deg, rgba(87, 75, 110, 0.95) 0%, rgba(90, 120, 150, 0.9) 100%),
-        url('/Users/yasirunisal/Desktop/event/frontend/public/hero.png') center/cover;
+        url('/Users/yasirunisal/Desktop/projects/event/frontend/public/hero.png') center/cover;
     border: 1px solid var(--border);
     box-shadow: 0 16px 48px rgba(37,63,86,0.08);
     overflow: hidden;

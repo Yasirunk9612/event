@@ -6,26 +6,35 @@ import "../pages/css/EventDetail.css";
 const EventDetail = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
-  const [selectedPackages, setSelectedPackages] = useState([]); // multi-select
+  const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedAddOns, setSelectedAddOns] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     axios
       .get(`http://localhost:5002/api/events/${id}`)
-      .then((res) => setEvent(res.data))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        console.log("Event data received:", res.data);
+        console.log("Packages:", res.data.packages);
+        console.log("Number of packages:", res.data.packages ? res.data.packages.length : 0);
+        setEvent(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching event:", err);
+        setLoading(false);
+      });
   }, [id]);
 
-  // Calculate total price when package or add-ons change
+  // Compute total: selected package price + add-ons
   useEffect(() => {
     if (!event) return;
-    const base = Number(event.price) || 0; // event base price
-    const packagesTotal = selectedPackages.reduce((sum, pkg) => sum + (Number(pkg.price) || 0), 0);
-    const addOnTotal = selectedAddOns.reduce((sum, addOn) => sum + (Number(addOn.price) || 0), 0);
-    setTotalPrice(base + packagesTotal + addOnTotal);
-  }, [event, selectedPackages, selectedAddOns]);
+    const pkgPrice = selectedPackage ? Number(selectedPackage.price) || 0 : 0;
+    const addOnTotal = selectedAddOns.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+    setTotalPrice(pkgPrice + addOnTotal);
+  }, [event, selectedPackage, selectedAddOns]);
 
   const handleAddOnToggle = (addOn) => {
     setSelectedAddOns(prev => {
@@ -38,173 +47,218 @@ const EventDetail = () => {
     });
   };
 
-  const togglePackage = (pkg) => {
-    setSelectedPackages(prev => {
-      const exists = prev.find(p => p.name === pkg.name && p.price === pkg.price);
-      if (exists) {
-        return prev.filter(p => !(p.name === pkg.name && p.price === pkg.price));
-      }
-      return [...prev, pkg];
-    });
+  const handlePackageSelect = (pkg) => {
+    setSelectedPackage(pkg);
   };
 
   const handleBooking = () => {
-    if (!selectedPackages.length) {
-      alert("Please select at least one package (or add one) to continue.");
-      return;
+    if (!selectedPackage) { 
+      alert("Please select a package to continue."); 
+      return; 
     }
     navigate("/booking", {
       state: {
         event,
-        packages: selectedPackages,
+        package: selectedPackage,
         addOns: selectedAddOns,
         totalPrice
       }
     });
   };
 
-  if (!event) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="event-detail-container">
+        <div className="loading-skeleton">
+          <div className="skeleton-header"></div>
+          <div className="skeleton-image"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-packages"></div>
+        </div>
+      </div>
+    );
+  }
 
-  // Add-ons list (no categories grouping needed per simplified requirements)
-  const addOnsList = event.addOns || [];
+  if (!event) return <div className="event-detail-container"><p>Event not found.</p></div>;
+
+  const hasDiscount = event.originalPrice && event.originalPrice > event.price;
+  const discountPercent = hasDiscount ? Math.round(((event.originalPrice - event.price) / event.originalPrice) * 100) : 0;
 
   return (
     <div className="event-detail-container">
-      <button className="back-btn" onClick={() => navigate(-1)} aria-label="Go back">← Back</button>
-      
-      <div className="event-header">
-        <div className="event-info">
-          <h1>{event.title}</h1>
-          <div className="event-meta">
-            <p><strong>📅 Date:</strong> {new Date(event.date).toDateString()}</p>
-            <p><strong>📍 Location:</strong> {event.location}</p>
-            <p><strong>🎯 Type:</strong> {event.type}</p>
-            <div className="luxury-badge-container">
-              <span className={`luxury-badge luxury-${event.luxuryCategory?.toLowerCase().replace(' ', '-') || 'normal'}`}>
-                {event.luxuryCategory || 'Normal'}
-              </span>
+      {/* Hero Section */}
+      <div className="hero-section">
+        <button className="back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
+        </button>
+        
+        <div className="hero-content">
+          <div className="hero-text">
+            <div className="event-type-badge">{event.type}</div>
+            <h1 className="event-title">{event.title}</h1>
+            <div className="event-location">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="2"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              {event.location}
+            </div>
+            <div className="price-display">
+              {hasDiscount && (
+                <span className="original-price">Rs.{event.originalPrice}</span>
+              )}
+              <span className="current-price">Rs.{event.price}</span>
+              {hasDiscount && (
+                <span className="discount-badge">{discountPercent}% OFF</span>
+              )}
             </div>
           </div>
+          
+          {event.image && (
+            <div className="hero-image">
+              <img src={`http://localhost:5002${event.image}`} alt={event.title} />
+              <div className="image-overlay"></div>
+            </div>
+          )}
         </div>
-        {event.image && (
-          <div className="event-image-container">
-            <img src={`http://localhost:5002${event.image}`} alt={event.title} className="event-detail-image" />
+      </div>
+
+      {/* Description Section */}
+      <div className="description-section">
+        <h2>About This Event</h2>
+        <p className="event-description">{event.description}</p>
+      </div>
+
+      {/* Packages Section */}
+      <div className="packages-section">
+        <div className="section-header">
+          <h2>Choose Your Package</h2>
+          <p className="section-subtitle">Select the perfect package for your experience</p>
+        </div>
+        
+        {event.packages && event.packages.length > 0 ? (
+          <div className="packages-grid">
+            {event.packages.map((pkg, idx) => {
+              console.log(`Rendering package ${idx}:`, pkg);
+              const isSelected = selectedPackage && selectedPackage.name === pkg.name;
+              return (
+                <div 
+                  key={idx} 
+                  className={`package-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handlePackageSelect(pkg)}
+                >
+                  <div className="package-header">
+                    <h3 className="package-name">{pkg.name}</h3>
+                    <div className="package-price">Rs.{pkg.price}</div>
+                  </div>
+                  <p className="package-description">{pkg.description || "No description available"}</p>
+                  <div className="package-select">
+                    <div className={`radio-circle ${isSelected ? 'selected' : ''}`}>
+                      {isSelected && <div className="radio-dot"></div>}
+                    </div>
+                    <span>Select Package</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="no-packages">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+              <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <p>No packages available for this event.</p>
+            <p className="debug-info">Debug: event.packages = {JSON.stringify(event.packages)}</p>
           </div>
         )}
       </div>
-      
-      <p className="event-description">{event.description}</p>
-
-      <div className="packages-section">
-        <h2>Packages (Select multiple)</h2>
-        {event.packages && event.packages.length > 0 ? (
-          <ul className="multi-packages">
-            {event.packages.map((pkg, idx) => {
-              const checked = selectedPackages.some(p => p.name === pkg.name && p.price === pkg.price);
-              return (
-                <li key={idx} className={checked ? 'pkg-selected' : ''}>
-                  <input
-                    type="checkbox"
-                    value={pkg.name}
-                    checked={checked}
-                    onChange={() => togglePackage(pkg)}
-                    id={`pkg-${idx}`}
-                  />
-                  <label htmlFor={`pkg-${idx}`}>
-                    <span className="pkg-header">
-                      <strong>{pkg.name}</strong>
-                      <span className="pkg-price-badge">Rs.{pkg.price}</span>
-                    </span>
-                    <span className="pkg-desc">{pkg.description}</span>
-                  </label>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (<p>No packages available.</p>)}
-        <div className="base-price-note">Event Base Price: <strong>Rs.{event.price}</strong></div>
-      </div>
 
       {/* Add-ons Section */}
-      {addOnsList.length > 0 && (
+      {event.addOns && event.addOns.length > 0 && (
         <div className="addons-section">
-          <h2>Add-ons</h2>
-          <p className="addons-subtitle">Select extra options to increase value</p>
-          <div className="addon-grid">
-            {addOnsList.map((addOn, idx) => (
-              <div key={addOn._id || idx} className="addon-item">
-                <label className="addon-label">
-                  <input
-                    type="checkbox"
-                    checked={selectedAddOns.some(item => item._id === addOn._id)}
-                    onChange={() => handleAddOnToggle(addOn)}
-                    className="addon-checkbox"
-                  />
-                  <div className="addon-content">
-                    <div className="addon-header">
-                      <span className="addon-name">{addOn.name}</span>
-                      <span className="addon-price">+Rs.{addOn.price}</span>
-                    </div>
-                    {addOn.description && (
-                      <p className="addon-description">{addOn.description}</p>
-                    )}
+          <div className="section-header">
+            <h2>Enhance Your Experience</h2>
+            <p className="section-subtitle">Add extra features to make your event even better</p>
+          </div>
+          
+          <div className="addons-grid">
+            {event.addOns.map((addOn, idx) => {
+              const isSelected = selectedAddOns.some(item => item._id === addOn._id);
+              return (
+                <div 
+                  key={addOn._id || idx} 
+                  className={`addon-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleAddOnToggle(addOn)}
+                >
+                  <div className="addon-header">
+                    <h4 className="addon-name">{addOn.name}</h4>
+                    <div className="addon-price">+Rs.{addOn.price}</div>
                   </div>
-                </label>
-              </div>
-            ))}
+                  {addOn.description && (
+                    <p className="addon-description">{addOn.description}</p>
+                  )}
+                  <div className="addon-checkbox">
+                    <div className={`checkbox-circle ${isSelected ? 'selected' : ''}`}>
+                      {isSelected && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span>{isSelected ? 'Added' : 'Add to package'}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Price Summary */}
-      {selectedPackages.length > 0 && (
+      {selectedPackage && (
         <div className="price-summary">
-          <h3>Price Breakdown</h3>
-          {event.originalPrice && event.originalPrice > event.price && (
-            <div className="price-item">
-              <span>Original Event Price</span>
-              <span className="original-price">Rs.{event.originalPrice}</span>
+          <h3>Order Summary</h3>
+          <div className="summary-items">
+            <div className="summary-item package-item">
+              <span>{selectedPackage.name} Package</span>
+              <span>Rs.{selectedPackage.price}</span>
             </div>
-          )}
-          {event.originalPrice && event.originalPrice > event.price && (
-            <div className="price-item">
-              <span>Discount</span>
-              <span className="discount-value">-
-                {Math.round(((event.originalPrice - event.price) / event.originalPrice) * 100)}%
-              </span>
+            {selectedAddOns.map((addOn, idx) => (
+              <div key={addOn._id || idx} className="summary-item addon-item">
+                <span>{addOn.name}</span>
+                <span>+Rs.{addOn.price}</span>
+              </div>
+            ))}
+            <div className="summary-total">
+              <span>Total Amount</span>
+              <span>Rs.{totalPrice}</span>
             </div>
-          )}
-          <div className="price-item">
-            <span>Event Base Price</span>
-            <span>Rs.{event.price}</span>
-          </div>
-          {selectedPackages.map((pkg, idx) => (
-            <div key={idx} className="price-item package-line">
-              <span>Package: {pkg.name}</span>
-              <span>+Rs.{pkg.price}</span>
-            </div>
-          ))}
-          {selectedAddOns.map((addOn, idx) => (
-            <div key={addOn._id || idx} className="price-item addon-price-item">
-              <span>{addOn.name}</span>
-              <span>+Rs.{addOn.price}</span>
-            </div>
-          ))}
-          <div className="price-item total-price">
-            <span><strong>Total Price</strong></span>
-            <span><strong>Rs.{totalPrice}</strong></span>
           </div>
         </div>
       )}
 
-      <button
-        className="book-btn"
-        onClick={handleBooking}
-        disabled={!selectedPackages.length}
-        aria-disabled={!selectedPackages.length}
-      >
-        Book Now - Rs.{totalPrice || 0}
-      </button>
+      {/* Booking Button */}
+      <div className="booking-section">
+        <button
+          className={`book-btn ${!selectedPackage ? 'disabled' : ''}`}
+          onClick={handleBooking}
+          disabled={!selectedPackage}
+        >
+          {selectedPackage ? (
+            <>
+              <span>Book Now</span>
+              <span className="btn-price">Rs.{totalPrice}</span>
+            </>
+          ) : (
+            'Select a package to continue'
+          )}
+        </button>
+      </div>
     </div>
   );
 };

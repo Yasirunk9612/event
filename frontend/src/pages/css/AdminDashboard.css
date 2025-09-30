@@ -44,6 +44,75 @@
 .ov-value { font-size: 1.6rem; font-weight: 800; color: var(--text); }
 .ov-label { color: var(--muted); }
 
+/* Package List Styling */
+.package-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.package-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.package-item strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.pkg-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+.remove-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #b73c48;
+}
+
+.no-packages {
+  color: var(--muted);
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+/* Debug info styling */
+.debug-info {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  word-break: break-all;
+}
+
 /* Primary CTA */
 .open-modal-btn {
   background: var(--primary);

@@ -4,8 +4,6 @@ import "../pages/css/AdminDashboard.css";
 
 const API_BASE = "http://localhost:5002/api/events";
 
-const LUXURY_OPTIONS = ["Normal", "Luxury", "Full Luxury"];
-
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,8 +11,7 @@ const AdminDashboard = () => {
     title: "",
     description: "",
     type: "",
-    luxuryCategory: "Normal",
-    date: "",
+  // date removed per new requirements
     price: "",
     originalPrice: "",
     location: "",
@@ -45,8 +42,7 @@ const AdminDashboard = () => {
 
   // Quick stats derived from events
   const totalEvents = events.length;
-  const upcomingCount = events.filter((e) => new Date(e.date) >= new Date()).length;
-  const luxuryBreakdown = LUXURY_OPTIONS.reduce((acc, cat) => { acc[cat] = events.filter(e => e.luxuryCategory === cat).length; return acc; }, {});
+  // upcomingCount removed due to date removal
 
   // Form handlers
   const handleChange = (e) => {
@@ -97,6 +93,10 @@ const AdminDashboard = () => {
       const payload = { ...formData };
       // fallback originalPrice if blank
       if (!payload.originalPrice) payload.originalPrice = payload.price;
+      
+      console.log("Submitting packages:", payload.packages);
+      console.log("Number of packages:", payload.packages.length);
+      
       Object.keys(payload).forEach((key) => {
         if (key === "packages" || key === "addOns") data.append(key, JSON.stringify(payload[key]));
         else if (key === "image") { if (payload.image) data.append(key, payload.image); }
@@ -106,7 +106,10 @@ const AdminDashboard = () => {
       const url = editingId ? `${API_BASE}/${editingId}` : API_BASE;
       const method = editingId ? "put" : "post";
 
-      await axios({ url, method, data });
+      const response = await axios({ url, method, data });
+      console.log("Event saved:", response.data);
+      console.log("Saved packages:", response.data.packages);
+      
       await fetchEvents();
       resetForm();
       setShowModal(false);
@@ -120,8 +123,7 @@ const AdminDashboard = () => {
       title: "",
       description: "",
       type: "",
-      luxuryCategory: "Normal",
-      date: "",
+  // date removed
       price: "",
       originalPrice: "",
       location: "",
@@ -144,8 +146,7 @@ const AdminDashboard = () => {
       title: event.title,
       description: event.description,
       type: event.type,
-      luxuryCategory: event.luxuryCategory || "Normal",
-      date: event.date.split("T")[0],
+  // date removed
       price: event.price,
       originalPrice: event.originalPrice || event.price,
       location: event.location,
@@ -174,10 +175,6 @@ const AdminDashboard = () => {
           <h2 className="overview-title">Overview</h2>
           <div className="overview-grid">
             <div className="overview-card"><div className="ov-value">{totalEvents}</div><div className="ov-label">Total events</div></div>
-            <div className="overview-card"><div className="ov-value">{upcomingCount}</div><div className="ov-label">Upcoming</div></div>
-            {LUXURY_OPTIONS.map(cat => (
-              <div key={cat} className="overview-card small"><div className="ov-value">{luxuryBreakdown[cat]}</div><div className="ov-label">{cat}</div></div>
-            ))}
           </div>
         </section>
       )}
@@ -193,11 +190,7 @@ const AdminDashboard = () => {
 
               <input type="text" name="type" placeholder="Event Type (free text)" value={formData.type} onChange={handleChange} required />
 
-              <select name="luxuryCategory" value={formData.luxuryCategory} onChange={handleChange} required>
-                {LUXURY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-
-              <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+              {/* date input removed */}
               <input type="number" name="price" placeholder="Active Price" value={formData.price} onChange={handleChange} required />
               <input type="number" name="originalPrice" placeholder="Original Price (optional)" value={formData.originalPrice} onChange={handleChange} />
               <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} required />
@@ -217,8 +210,13 @@ const AdminDashboard = () => {
                 </div>
                 <ul className="package-list">
                   {formData.packages.map((pkg, i) => (
-                    <li key={i}>{pkg.name} - ${pkg.price} <button type="button" onClick={() => removePackage(i)}>Remove</button></li>
+                    <li key={i} className="package-item">
+                      <strong>{pkg.name}</strong> - Rs.{pkg.price}
+                      {pkg.description && <span className="pkg-desc"> - {pkg.description}</span>}
+                      <button type="button" className="remove-btn" onClick={() => removePackage(i)}>Remove</button>
+                    </li>
                   ))}
+                  {formData.packages.length === 0 && <li className="no-packages">No packages added yet</li>}
                 </ul>
               </div>
 
@@ -232,7 +230,7 @@ const AdminDashboard = () => {
                 </div>
                 <ul className="package-list">
                   {formData.addOns.map((addon, i) => (
-                    <li key={i}>{addon.name} - ${addon.price} <button type="button" onClick={() => removeAddOn(i)}>Remove</button></li>
+                    <li key={i}>{addon.name} - Rs.{addon.price} <button type="button" onClick={() => removeAddOn(i)}>Remove</button></li>
                   ))}
                 </ul>
               </div>
@@ -260,12 +258,12 @@ const AdminDashboard = () => {
                 {event.image && <img loading="lazy" src={`http://localhost:5002${event.image}`} alt={event.title} />}
                 <h3>{event.title}</h3>
                 <p>{event.shortDescription || event.description?.slice(0,100)}</p>
-                <p>Luxury: {event.luxuryCategory}</p>
-                <p>Base Price: ${event.price}</p>
+                <p>Type: {event.type}</p>
+                <p>Base Price: Rs.{event.price}</p>
                 {event.originalPrice && event.originalPrice > event.price && (
                   <p className="card-discount-line"><span className="old">${event.originalPrice}</span> <span className="save">Save {Math.round(((event.originalPrice - event.price)/event.originalPrice)*100)}%</span></p>
                 )}
-                <p>Date: {new Date(event.date).toLocaleDateString()}</p>
+                {/* Date removed */}
                 <p>Location: {event.location}</p>
                 <div className="card-actions">
                   <button onClick={() => handleEdit(event)}>Edit</button>

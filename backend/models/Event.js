@@ -64,20 +64,14 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true, // now admin can set any category
     },
-    luxuryCategory: {
-      type: String,
-      enum: ["Normal", "Luxury", "Full Luxury"],
-      required: true,
-      default: "Normal"
-    },
-    date: { type: Date    },
+  // date removed per new requirements (events no longer scheduled by date)
     price: { type: Number, required: true }, // Current / active price
     originalPrice: { type: Number }, // Shown as struck through if > price
     location: { type: String, required: true },
     image: { type: String },
-    packages: [packageSchema], // Event packages
-    addOns: [addOnSchema], // Available add-on options (simple list)
-    shortDescription: { type: String }, // For card display
+    packages: [packageSchema], 
+    addOns: [addOnSchema], 
+    shortDescription: { type: String }, 
   },
   { timestamps: true }
 );
