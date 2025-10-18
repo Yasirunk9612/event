@@ -60,10 +60,7 @@ const eventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    type: {
-      type: String,
-      required: true, // now admin can set any category
-    },
+   
   // date removed per new requirements (events no longer scheduled by date)
     price: { type: Number, required: true }, // Current / active price
     originalPrice: { type: Number }, // Shown as struck through if > price

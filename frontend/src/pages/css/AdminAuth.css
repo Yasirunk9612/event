@@ -1,0 +1,45 @@
+/* Admin Auth (Login / Register) — styles matching the project's visual language */
+
+:root {
+  --bg: #F4F5F7;
+  --text: #283E56;
+  --muted: #6F7D8A;
+  --primary: #253F56;
+  --border: rgba(37, 63, 86, 0.12);
+  --card: #FFFFFF;
+  --shadow: 0 10px 30px rgba(37, 63, 86, 0.08);
+  --radius: 14px;
+}
+
+.auth-page {
+  max-width: 520px;
+  margin: 3.5rem auto;
+  padding: 1rem;
+  color: var(--text);
+}
+
+.auth-page h2 { text-align: center; margin-bottom: 1rem; font-size: 1.6rem; }
+
+.auth-form {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.auth-form input { padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border); outline: none; }
+.auth-form input:focus { box-shadow: 0 0 0 4px rgba(37,63,86,0.06); border-color: var(--primary); }
+
+.auth-form button { background: var(--primary); color: #fff; border: none; padding: 0.85rem; border-radius: 10px; cursor: pointer; font-weight: 700; }
+
+.auth-form .error { color: #c43d4b; font-weight: 600; margin-top: 0.5rem; }
+
+.auth-page .links { display:flex; gap:0.5rem; justify-content:center; margin-top:0.6rem; }
+.auth-page .links button { background: transparent; border: 1px solid var(--border); padding: 0.45rem 0.8rem; border-radius: 999px; cursor: pointer; }
+
+@media (max-width: 520px) {
+  .auth-page { margin: 2rem 1rem; }
+}

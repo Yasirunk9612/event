@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import eventRoutes from "./routes/eventRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";
@@ -38,7 +39,7 @@ app.use(
   cors({
     origin: "http://localhost:3000", // allow frontend origin
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -48,6 +49,7 @@ app.use("/uploads", express.static(uploadsPath));
 // Routes
 app.use("/api/events", eventRoutes(upload));
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/auth", authRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI, {

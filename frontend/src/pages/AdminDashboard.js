@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "../pages/css/AdminDashboard.css";
+import { useNavigate, Link } from 'react-router-dom';
 
 const API_BASE = "http://localhost:5002/api/events";
+const AUTH_BASE = "http://localhost:5002/api/auth";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    type: "",
   // date removed per new requirements
     price: "",
     originalPrice: "",
@@ -24,6 +26,23 @@ const AdminDashboard = () => {
   const [addOnInput, setAddOnInput] = useState({ name: "", price: "", description: "" });
   const [editingId, setEditingId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
+  });
+
+  // Quick admin login helper requested
+  const quickAdminLogin = async () => {
+    try {
+      const res = await axios.post(`${AUTH_BASE}/login`, { email: 'admin@event.com', password: 'Admin1234' });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      setUser(res.data.user);
+      navigate('/admin');
+    } catch (err) {
+      console.error('Admin login failed', err);
+      alert('Admin login failed');
+    }
+  };
 
   // Fetch events from backend (optimized)
   const fetchEvents = useCallback(async () => {
@@ -39,6 +58,11 @@ const AdminDashboard = () => {
   }, []);
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
+
+  useEffect(() => {
+    if (!user) return;
+    // nothing extra for now
+  }, [user]);
 
   // Quick stats derived from events
   const totalEvents = events.length;
@@ -122,7 +146,6 @@ const AdminDashboard = () => {
     setFormData({
       title: "",
       description: "",
-      type: "",
   // date removed
       price: "",
       originalPrice: "",
@@ -145,7 +168,6 @@ const AdminDashboard = () => {
     setFormData({
       title: event.title,
       description: event.description,
-      type: event.type,
   // date removed
       price: event.price,
       originalPrice: event.originalPrice || event.price,
@@ -167,10 +189,23 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <h1>Admin Event Management</h1>
-      <button className="open-modal-btn" onClick={() => setShowModal(true)}>{editingId ? "Edit Event" : "Add Event"}</button>
+      {!user ? (
+        <div className="admin-auth-cta">
+          <p>You must be an admin to manage events.</p>
+          <div className="auth-buttons">
+            <button onClick={quickAdminLogin}>Quick Admin Login</button>
+            <Link to="/admin/login"><button>Login</button></Link>
+            <Link to="/admin/register"><button>Register</button></Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          <button className="open-modal-btn" onClick={() => setShowModal(true)}>{editingId ? "Edit Event" : "Add Event"}</button>
+        </>
+      )}
 
       {/* Overview moved from Event List */}
-      {!loading && (
+      {!loading && user && (
         <section className="admin-overview">
           <h2 className="overview-title">Overview</h2>
           <div className="overview-grid">
@@ -179,7 +214,7 @@ const AdminDashboard = () => {
         </section>
       )}
 
-      {showModal && (
+      {showModal && user && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{editingId ? "Edit Event" : "Add Event"}</h2>
@@ -188,7 +223,6 @@ const AdminDashboard = () => {
               <textarea name="description" placeholder="Full Description" value={formData.description} onChange={handleChange} required />
               <textarea name="shortDescription" placeholder="Short Card Description" value={formData.shortDescription} onChange={handleChange} />
 
-              <input type="text" name="type" placeholder="Event Type (free text)" value={formData.type} onChange={handleChange} required />
 
               {/* date input removed */}
               <input type="number" name="price" placeholder="Active Price" value={formData.price} onChange={handleChange} required />
@@ -258,7 +292,6 @@ const AdminDashboard = () => {
                 {event.image && <img loading="lazy" src={`http://localhost:5002${event.image}`} alt={event.title} />}
                 <h3>{event.title}</h3>
                 <p>{event.shortDescription || event.description?.slice(0,100)}</p>
-                <p>Type: {event.type}</p>
                 <p>Base Price: Rs.{event.price}</p>
                 {event.originalPrice && event.originalPrice > event.price && (
                   <p className="card-discount-line"><span className="old">${event.originalPrice}</span> <span className="save">Save {Math.round(((event.originalPrice - event.price)/event.originalPrice)*100)}%</span></p>
